@@ -19,7 +19,7 @@ function peekBalloonBoy() {
   balloonActive = true;
 
   const peekImg = document.createElement("img");
-  peekImg.src = chrome.runtime.getURL("balloon boy standing.png");
+  peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
 
   peekImg.style.position = "fixed";
   peekImg.style.width = "150px";
@@ -81,7 +81,7 @@ function peekBalloonBoy() {
       case 2: peekImg.style.top = "20px"; break;
       case 3: peekImg.style.bottom = "20px"; break;
     }
-  }, 50); // small delay to allow CSS transition
+  }, 50);
 
   // After 1 sec peek + 1 sec wait, remove peek and spawn walking
   setTimeout(() => {
