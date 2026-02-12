@@ -22,7 +22,6 @@ function spawnBalloonBoy() {
 
   img.style.position = "fixed";
   img.style.bottom = "0px";
-  img.style.right = "-200px"; // start off-screen
   img.style.width = "150px";
   img.style.zIndex = "999999";
   img.style.pointerEvents = "none";
@@ -34,14 +33,27 @@ function spawnBalloonBoy() {
   const randomHeight = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
   img.style.bottom = `${randomHeight}px`;
 
+  // Randomly choose side
+  const fromLeft = Math.random() < 0.5;
+  const screenWidth = window.innerWidth + 400;
+
+  if (fromLeft) {
+    img.style.left = "-200px";   // start off-screen left
+    img.style.transform = `scaleX(-1) translateX(${screenWidth}px)`; // mirrored
+  } else {
+    img.style.right = "-200px";  // start off-screen right
+    img.style.transform = `translateX(-${screenWidth}px)`;           // normal
+  }
+
   document.body.appendChild(img);
 
   // Force reflow so transition works
   void img.offsetWidth;
 
-  // Move across screen
-  const screenWidth = window.innerWidth + 400;
-  img.style.transform = `translateX(-${screenWidth}px)`;
+  // Animate across screen
+  img.style.transform = fromLeft
+    ? `scaleX(-1) translateX(-${screenWidth}px)`
+    : `translateX(-${screenWidth}px)`;
 
   // Remove after animation completes
   setTimeout(() => {
@@ -54,7 +66,6 @@ function spawnBalloonBoy() {
 window.addEventListener("keydown", (e) => {
   const now = Date.now();
 
-  // reset buffer if more than 3 sec since last key
   if (now - lastKeyTime > SECRET_TIME_LIMIT) {
     keyBuffer = [];
   }
@@ -62,7 +73,6 @@ window.addEventListener("keydown", (e) => {
   lastKeyTime = now;
   keyBuffer.push(e.key.toLowerCase());
 
-  // Only keep last N keys
   if (keyBuffer.length > SECRET_CODE.length) {
     keyBuffer.shift();
   }
