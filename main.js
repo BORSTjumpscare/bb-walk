@@ -19,8 +19,8 @@ function peekBalloonBoy() {
   balloonActive = true;
 
   const peekImg = document.createElement("img");
-  peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
-
+peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
+img.src = chrome.runtime.getURL("balloon-boy.gif");
   peekImg.style.position = "fixed";
   peekImg.style.width = "150px";
   peekImg.style.zIndex = "999999";
