@@ -1,26 +1,26 @@
 const SPAWN_INTERVAL = 10000; // 10 seconds
 const SPAWN_CHANCE = 0.03;    // 3%
-let balloonActive = false;     // Prevent multiple spawns
+let balloonActive = false;     // Only one Balloon Boy at a time
 
-// Secret code detection
+// Secret code
 const SECRET_CODE = ["f", "n", "a", "f"];
 let keyBuffer = [];
 let lastKeyTime = 0;
 const SECRET_TIME_LIMIT = 3000; // 3 seconds
 
+// Try random spawn
 function trySpawnBalloonBoy() {
   if (!balloonActive && Math.random() < SPAWN_CHANCE) {
     peekBalloonBoy();
   }
 }
 
-// Peek with slide-in, 1s peek + 1s wait, then walk
+// Peek function
 function peekBalloonBoy() {
   balloonActive = true;
 
   const peekImg = document.createElement("img");
   peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
-
   peekImg.style.position = "fixed";
   peekImg.style.width = "150px";
   peekImg.style.zIndex = "999999";
@@ -41,27 +41,26 @@ function peekBalloonBoy() {
   const side = Math.floor(Math.random() * 4); // 0=left,1=right,2=top,3=bottom
   let fromLeft = false;
 
-  // Initial off-screen position
   switch (side) {
-    case 0:
+    case 0: // left
       peekImg.style.left = "-120px";
       peekImg.style.bottom = `${randomHeight}px`;
       peekImg.style.transform = "rotate(15deg)";
       fromLeft = true;
       break;
-    case 1:
+    case 1: // right
       peekImg.style.right = "-120px";
       peekImg.style.bottom = `${randomHeight}px`;
       peekImg.style.transform = "rotate(-15deg)";
       fromLeft = false;
       break;
-    case 2:
+    case 2: // top
       peekImg.style.top = "-120px";
       peekImg.style.left = `${randomWidth}px`;
       peekImg.style.transform = "rotate(0deg)";
       fromLeft = Math.random() < 0.5;
       break;
-    case 3:
+    case 3: // bottom
       peekImg.style.bottom = "-120px";
       peekImg.style.left = `${randomWidth}px`;
       peekImg.style.transform = "rotate(0deg)";
@@ -71,7 +70,7 @@ function peekBalloonBoy() {
 
   document.body.appendChild(peekImg);
 
-  // Slide-in using requestAnimationFrame for reliable CSS animation
+  // Slide-in peek
   requestAnimationFrame(() => {
     switch (side) {
       case 0: peekImg.style.left = "0px"; break;
@@ -81,7 +80,7 @@ function peekBalloonBoy() {
     }
   });
 
-  // Peek 1s + wait 1s = total 2s, then spawn walking
+  // Peek 1s + wait 1s → then walk
   setTimeout(() => {
     peekImg.remove();
     setTimeout(() => {
@@ -94,7 +93,6 @@ function peekBalloonBoy() {
 function spawnBalloonBoy(fromLeft = null) {
   const img = document.createElement("img");
   img.src = chrome.runtime.getURL("balloon-boy.gif");
-
   img.style.position = "fixed";
   img.style.width = "150px";
   img.style.zIndex = "999999";
@@ -122,35 +120,25 @@ function spawnBalloonBoy(fromLeft = null) {
 
   void img.offsetWidth; // force reflow
 
-  // Animate
   img.style.transform = fromLeft
     ? `scaleX(-1) translateX(-${screenWidth}px)`
     : `translateX(-${screenWidth}px)`;
 
-  // Remove after animation
   setTimeout(() => {
     img.remove();
     balloonActive = false;
   }, 8000);
 }
 
-// Secret code F N A F triggers peek + walk
+// Secret code listener
 window.addEventListener("keydown", (e) => {
   const now = Date.now();
-
-  if (now - lastKeyTime > SECRET_TIME_LIMIT) {
-    keyBuffer = [];
-  }
-
+  if (now - lastKeyTime > SECRET_TIME_LIMIT) keyBuffer = [];
   lastKeyTime = now;
   keyBuffer.push(e.key.toLowerCase());
-
   if (keyBuffer.length > SECRET_CODE.length) keyBuffer.shift();
 
-  if (
-    keyBuffer.length === SECRET_CODE.length &&
-    keyBuffer.every((k, i) => k === SECRET_CODE[i])
-  ) {
+  if (keyBuffer.length === SECRET_CODE.length && keyBuffer.every((k, i) => k === SECRET_CODE[i])) {
     if (!balloonActive) peekBalloonBoy();
     keyBuffer = [];
   }
