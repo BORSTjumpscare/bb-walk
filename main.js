@@ -17,14 +17,12 @@ function trySpawnBalloonBoy() {
 }
 
 
-// Full peek → walk sequence
 function startSequence() {
   balloonActive = true;
 
   const fromLeft = Math.random() < 0.5;
   const screenHeight = window.innerHeight;
 
-  // Random visible height
   const minHeight = screenHeight * 0.2;
   const maxHeight = screenHeight * 0.6;
   const height = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
@@ -33,7 +31,9 @@ function startSequence() {
 }
 
 
-// Peek (NO rotation at all)
+// --------------------
+// PEEK
+// --------------------
 function peek(fromLeft, height) {
 
   const peekImg = document.createElement("img");
@@ -54,26 +54,22 @@ function peek(fromLeft, height) {
 
   document.body.appendChild(peekImg);
 
-  // Glide in
   requestAnimationFrame(() => {
     if (fromLeft) peekImg.style.left = "0px";
     else peekImg.style.right = "0px";
   });
 
-  // Stay visible 1 second
   setTimeout(() => {
 
-    // Glide out
     if (fromLeft) peekImg.style.left = "-150px";
     else peekImg.style.right = "-150px";
 
     setTimeout(() => {
       peekImg.remove();
 
-      // Small wait before walk
       setTimeout(() => {
         walk(fromLeft, height);
-      }, 150);
+      }, 150); // short wait between peek & walk
 
     }, 600);
 
@@ -81,7 +77,9 @@ function peek(fromLeft, height) {
 }
 
 
-// WALK — guaranteed correct direction
+// --------------------
+// WALK (WITH MIRROR FIX)
+// --------------------
 function walk(fromLeft, height) {
 
   const img = document.createElement("img");
@@ -99,6 +97,10 @@ function walk(fromLeft, height) {
   if (fromLeft) {
     // Start left → walk right
     img.style.left = "-200px";
+
+    // 🔥 Mirror ONLY when from left
+    img.style.transform = "scaleX(-1)";
+
     document.body.appendChild(img);
 
     requestAnimationFrame(() => {
@@ -108,6 +110,10 @@ function walk(fromLeft, height) {
   } else {
     // Start right → walk left
     img.style.right = "-200px";
+
+    // Normal orientation
+    img.style.transform = "scaleX(1)";
+
     document.body.appendChild(img);
 
     requestAnimationFrame(() => {
@@ -122,7 +128,9 @@ function walk(fromLeft, height) {
 }
 
 
-// Secret code listener
+// --------------------
+// SECRET CODE
+// --------------------
 window.addEventListener("keydown", (e) => {
 
   const now = Date.now();
