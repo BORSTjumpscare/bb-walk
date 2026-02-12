@@ -1,47 +1,55 @@
-const SPAWN_INTERVAL = 10000; // 10 seconds
+const SPAWN_INTERVAL = 10000; // 10 sec
 const SPAWN_CHANCE = 0.03;    // 3%
 let balloonActive = false;
 
-// Secret code detection
+// Secret code
 const SECRET_CODE = ["f","n","a","f"];
 let keyBuffer = [];
 let lastKeyTime = 0;
-const SECRET_TIME_LIMIT = 3000; // 3 seconds
+const SECRET_TIME_LIMIT = 3000;
 
+
+// Random spawn check
 function trySpawnBalloonBoy() {
   if (!balloonActive && Math.random() < SPAWN_CHANCE) {
-    peekBalloonBoy();
+    startSequence();
   }
 }
 
-// Peek function
-function peekBalloonBoy() {
+
+// Full peek → walk sequence
+function startSequence() {
   balloonActive = true;
 
-  const peekImg = document.createElement("img");
-  peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
-  peekImg.style.position = "fixed";
-  peekImg.style.width = "150px";
-  peekImg.style.zIndex = "999999";
-  peekImg.style.pointerEvents = "none";
-  peekImg.style.transition = "all 0.6s ease"; // SLOWER glide
-
+  const fromLeft = Math.random() < 0.5;
   const screenHeight = window.innerHeight;
 
   // Random visible height
   const minHeight = screenHeight * 0.2;
   const maxHeight = screenHeight * 0.6;
-  const peekHeight = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
-  peekImg.style.bottom = `${peekHeight}px`;
+  const height = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
 
-  const fromLeft = Math.random() < 0.5;
+  peek(fromLeft, height);
+}
+
+
+// Peek (NO rotation at all)
+function peek(fromLeft, height) {
+
+  const peekImg = document.createElement("img");
+  peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
+
+  peekImg.style.position = "fixed";
+  peekImg.style.width = "150px";
+  peekImg.style.zIndex = "999999";
+  peekImg.style.pointerEvents = "none";
+  peekImg.style.bottom = `${height}px`;
+  peekImg.style.transition = "all 0.6s ease";
 
   if (fromLeft) {
     peekImg.style.left = "-150px";
-    peekImg.style.transform = "rotate(0deg)"; // top points right
   } else {
     peekImg.style.right = "-150px";
-    peekImg.style.transform = "rotate(180deg)"; // top points left
   }
 
   document.body.appendChild(peekImg);
@@ -52,7 +60,7 @@ function peekBalloonBoy() {
     else peekImg.style.right = "0px";
   });
 
-  // Visible for 1 second
+  // Stay visible 1 second
   setTimeout(() => {
 
     // Glide out
@@ -62,44 +70,50 @@ function peekBalloonBoy() {
     setTimeout(() => {
       peekImg.remove();
 
-      // SHORT WAIT before walk (this is what you wanted faster)
+      // Small wait before walk
       setTimeout(() => {
-        spawnBalloonBoy(fromLeft, peekHeight);
-      }, 150); // 🔥 very short 0.15s delay
+        walk(fromLeft, height);
+      }, 150);
 
-    }, 600); // matches glide-out duration
+    }, 600);
 
   }, 1000);
 }
 
-// Walking
-function spawnBalloonBoy(fromLeft, walkHeight) {
+
+// WALK — guaranteed correct direction
+function walk(fromLeft, height) {
 
   const img = document.createElement("img");
   img.src = chrome.runtime.getURL("balloon-boy.gif");
+
   img.style.position = "fixed";
   img.style.width = "150px";
   img.style.zIndex = "999999";
   img.style.pointerEvents = "none";
-  img.style.bottom = `${walkHeight}px`;
-  img.style.transition = "transform 7s linear"; // SLOWER walk
+  img.style.bottom = `${height}px`;
+  img.style.transition = "all 7s linear";
 
-  const screenWidth = window.innerWidth + 400;
+  const screenWidth = window.innerWidth + 300;
 
   if (fromLeft) {
+    // Start left → walk right
     img.style.left = "-200px";
-    img.style.transform = `scaleX(-1) translateX(${screenWidth}px)`;
+    document.body.appendChild(img);
+
+    requestAnimationFrame(() => {
+      img.style.left = `${screenWidth}px`;
+    });
+
   } else {
+    // Start right → walk left
     img.style.right = "-200px";
-    img.style.transform = `translateX(-${screenWidth}px)`;
+    document.body.appendChild(img);
+
+    requestAnimationFrame(() => {
+      img.style.right = `${screenWidth}px`;
+    });
   }
-
-  document.body.appendChild(img);
-  void img.offsetWidth;
-
-  img.style.transform = fromLeft
-    ? `scaleX(-1) translateX(-${screenWidth}px)`
-    : `translateX(-${screenWidth}px)`;
 
   setTimeout(() => {
     img.remove();
@@ -107,22 +121,32 @@ function spawnBalloonBoy(fromLeft, walkHeight) {
   }, 7000);
 }
 
-// Secret code
+
+// Secret code listener
 window.addEventListener("keydown", (e) => {
+
   const now = Date.now();
-  if (now - lastKeyTime > SECRET_TIME_LIMIT) keyBuffer = [];
+  if (now - lastKeyTime > SECRET_TIME_LIMIT) {
+    keyBuffer = [];
+  }
+
   lastKeyTime = now;
 
   keyBuffer.push(e.key.toLowerCase());
-  if (keyBuffer.length > SECRET_CODE.length) keyBuffer.shift();
+  if (keyBuffer.length > SECRET_CODE.length) {
+    keyBuffer.shift();
+  }
 
   if (
     keyBuffer.length === SECRET_CODE.length &&
     keyBuffer.every((k, i) => k === SECRET_CODE[i])
   ) {
-    if (!balloonActive) peekBalloonBoy();
+    if (!balloonActive) {
+      startSequence();
+    }
     keyBuffer = [];
   }
 });
+
 
 setInterval(trySpawnBalloonBoy, SPAWN_INTERVAL);
