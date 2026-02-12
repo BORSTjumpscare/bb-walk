@@ -3,7 +3,6 @@
   "name": "Balloon Boy Walker",
   "version": "1.0",
   "description": "Balloon Boy randomly peeks and walks across your screen.",
-  "permissions": ["scripting"],
   "background": {
     "service_worker": "background.js"
   },
