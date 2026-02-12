@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Balloon Boy Walker",
   "version": "1.0",
-  "description": "Balloon Boy randomly walks across your screen.",
+  "description": "Balloon Boy randomly peeks and walks across your screen.",
   "permissions": ["scripting"],
   "background": {
     "service_worker": "background.js"
@@ -16,7 +16,10 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["balloon-boy.gif"],
+      "resources": [
+        "balloon-boy.gif",
+        "balloon-boy-standing.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ]
