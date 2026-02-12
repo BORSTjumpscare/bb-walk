@@ -1,3 +1,26 @@
+// DEBUG: Immediately show the PNG and GIF to check they load
+(function testAssets() {
+  const testPeek = document.createElement("img");
+  testPeek.src = chrome.runtime.getURL("balloon-boy-standing.png");
+  testPeek.style.position = "fixed";
+  testPeek.style.top = "10px";
+  testPeek.style.left = "10px";
+  testPeek.style.width = "150px";
+  testPeek.style.zIndex = "999999";
+  document.body.appendChild(testPeek);
+
+  const testWalk = document.createElement("img");
+  testWalk.src = chrome.runtime.getURL("balloon-boy.gif");
+  testWalk.style.position = "fixed";
+  testWalk.style.top = "10px";
+  testWalk.style.left = "200px";
+  testWalk.style.width = "150px";
+  testWalk.style.zIndex = "999999";
+  document.body.appendChild(testWalk);
+
+  console.log("Debug: Test images added to page");
+})();
+
 const SPAWN_INTERVAL = 10000; // 10 seconds
 const SPAWN_CHANCE = 0.03;    // 3%
 let balloonActive = false;     // Only one Balloon Boy at a time
