@@ -1,17 +1,3 @@
-Ahhh got it 😄 — you want:
-
-✅ Slower glide in/out
-
-✅ Slower walk
-
-✅ BUT the wait between peek and walk shorter/faster
-
-So:
-Peek → glide out → very short pause → walk
-Not a super fast animation.
-
-Here is your corrected and tuned main.js 👇
-
 const SPAWN_INTERVAL = 10000; // 10 seconds
 const SPAWN_CHANCE = 0.03;    // 3%
 let balloonActive = false;
