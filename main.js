@@ -14,13 +14,13 @@ function trySpawnBalloonBoy() {
   }
 }
 
-// Peek from a random side with slide-in, then walk
+// Peek with slide-in, 1s peek + 1s wait, then walk
 function peekBalloonBoy() {
   balloonActive = true;
 
   const peekImg = document.createElement("img");
-peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
-img.src = chrome.runtime.getURL("balloon-boy.gif");
+  peekImg.src = chrome.runtime.getURL("balloon-boy-standing.png");
+
   peekImg.style.position = "fixed";
   peekImg.style.width = "150px";
   peekImg.style.zIndex = "999999";
@@ -30,7 +30,6 @@ img.src = chrome.runtime.getURL("balloon-boy.gif");
   const screenWidth = window.innerWidth;
   const screenHeight = window.innerHeight;
 
-  // Random vertical or horizontal position
   const minHeight = screenHeight * 0.2;
   const maxHeight = screenHeight * 0.6;
   const minWidth = screenWidth * 0.2;
@@ -39,31 +38,30 @@ img.src = chrome.runtime.getURL("balloon-boy.gif");
   let randomHeight = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
   let randomWidth = Math.floor(Math.random() * (maxWidth - minWidth) + minWidth);
 
-  // Random side: 0=left,1=right,2=top,3=bottom
-  const side = Math.floor(Math.random() * 4);
+  const side = Math.floor(Math.random() * 4); // 0=left,1=right,2=top,3=bottom
   let fromLeft = false;
 
   // Initial off-screen position
   switch (side) {
-    case 0: // left
+    case 0:
       peekImg.style.left = "-120px";
       peekImg.style.bottom = `${randomHeight}px`;
       peekImg.style.transform = "rotate(15deg)";
       fromLeft = true;
       break;
-    case 1: // right
+    case 1:
       peekImg.style.right = "-120px";
       peekImg.style.bottom = `${randomHeight}px`;
       peekImg.style.transform = "rotate(-15deg)";
       fromLeft = false;
       break;
-    case 2: // top
+    case 2:
       peekImg.style.top = "-120px";
       peekImg.style.left = `${randomWidth}px`;
       peekImg.style.transform = "rotate(0deg)";
       fromLeft = Math.random() < 0.5;
       break;
-    case 3: // bottom
+    case 3:
       peekImg.style.bottom = "-120px";
       peekImg.style.left = `${randomWidth}px`;
       peekImg.style.transform = "rotate(0deg)";
@@ -73,17 +71,17 @@ img.src = chrome.runtime.getURL("balloon-boy.gif");
 
   document.body.appendChild(peekImg);
 
-  // Slide-in animation (peek)
-  setTimeout(() => {
+  // Slide-in using requestAnimationFrame for reliable CSS animation
+  requestAnimationFrame(() => {
     switch (side) {
       case 0: peekImg.style.left = "0px"; break;
       case 1: peekImg.style.right = "0px"; break;
       case 2: peekImg.style.top = "20px"; break;
       case 3: peekImg.style.bottom = "20px"; break;
     }
-  }, 50);
+  });
 
-  // After 1 sec peek + 1 sec wait, remove peek and spawn walking
+  // Peek 1s + wait 1s = total 2s, then spawn walking
   setTimeout(() => {
     peekImg.remove();
     setTimeout(() => {
@@ -92,7 +90,7 @@ img.src = chrome.runtime.getURL("balloon-boy.gif");
   }, 1000);
 }
 
-// Spawn walking Balloon Boy (from left or right)
+// Walking Balloon Boy
 function spawnBalloonBoy(fromLeft = null) {
   const img = document.createElement("img");
   img.src = chrome.runtime.getURL("balloon-boy.gif");
@@ -103,7 +101,6 @@ function spawnBalloonBoy(fromLeft = null) {
   img.style.pointerEvents = "none";
   img.style.transition = "transform 8s linear";
 
-  // Random vertical position
   const minHeight = window.innerHeight * 0.2;
   const maxHeight = window.innerHeight * 0.6;
   const randomHeight = Math.floor(Math.random() * (maxHeight - minHeight) + minHeight);
@@ -123,10 +120,9 @@ function spawnBalloonBoy(fromLeft = null) {
 
   document.body.appendChild(img);
 
-  // Force reflow
-  void img.offsetWidth;
+  void img.offsetWidth; // force reflow
 
-  // Animate across screen
+  // Animate
   img.style.transform = fromLeft
     ? `scaleX(-1) translateX(-${screenWidth}px)`
     : `translateX(-${screenWidth}px)`;
@@ -138,7 +134,7 @@ function spawnBalloonBoy(fromLeft = null) {
   }, 8000);
 }
 
-// Secret code listener
+// Secret code F N A F triggers peek + walk
 window.addEventListener("keydown", (e) => {
   const now = Date.now();
 
@@ -149,20 +145,16 @@ window.addEventListener("keydown", (e) => {
   lastKeyTime = now;
   keyBuffer.push(e.key.toLowerCase());
 
-  if (keyBuffer.length > SECRET_CODE.length) {
-    keyBuffer.shift();
-  }
+  if (keyBuffer.length > SECRET_CODE.length) keyBuffer.shift();
 
   if (
     keyBuffer.length === SECRET_CODE.length &&
     keyBuffer.every((k, i) => k === SECRET_CODE[i])
   ) {
-    if (!balloonActive) {
-      peekBalloonBoy(); // secret code triggers peek first
-    }
+    if (!balloonActive) peekBalloonBoy();
     keyBuffer = [];
   }
 });
 
-// Run every 10 seconds
+// Random spawn every 10s
 setInterval(trySpawnBalloonBoy, SPAWN_INTERVAL);
